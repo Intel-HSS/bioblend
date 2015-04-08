@@ -4,6 +4,7 @@ Contains possible interactions with the Galaxy Data Libraries
 from bioblend.galaxy.client import Client
 from bioblend.util import attach_file
 
+import sys
 
 class LibraryClient(Client):
 
@@ -258,8 +259,16 @@ class LibraryClient(Client):
             payload["roles"] = keywords["roles"]
         if keywords.get("link_data_only", None) and keywords['link_data_only'] != 'copy_files':
             payload["link_data_only"] = 'link_to_files'
-        if keywords.get('ccc_did', None):
-            payload['ccc_did'] = keywords['ccc_did'];
+        if keywords.get('remote_dataset', None):
+            payload['remote_dataset'] = keywords['remote_dataset'];
+        if keywords.get('uuid_list', None):
+            payload['uuid_list'] = keywords['uuid_list'];
+        if keywords.get('remote_dataset_type_list', None):
+            payload['remote_dataset_type_list'] = keywords['remote_dataset_type_list'];
+        if keywords.get('file_size_list', None):
+            payload['file_size_list'] = keywords['file_size_list'];
+        if keywords.get('line_count_list', None):
+            payload['line_count_list'] = keywords['line_count_list'];
         # upload options
         if keywords.get('file_url', None) is not None:
             payload['upload_option'] = 'upload_file'
@@ -443,7 +452,13 @@ class LibraryClient(Client):
         vars = locals().copy()
         del vars['self']
         del vars['kwargs']
+        num_files_uploaded = len(filesystem_paths.split('\n'));
         for key,value in kwargs.iteritems():
+            if key == "uuid_list" or key == "remote_dataset_type_list" or key == "file_size_list" or key == "line_count_list":
+                tokens = value.split('\n');
+                if len(tokens) != num_files_uploaded:
+                    sys.stderr.write('Mismatch in the number of files uploaded and %ss provided: %d and %d\n'%(key, num_files_uploaded, len(tokens)));
+                    return None;
             vars[key] = value;
         return self._do_upload(**vars)
 
