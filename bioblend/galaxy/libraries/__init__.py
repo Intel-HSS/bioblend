@@ -258,6 +258,8 @@ class LibraryClient(Client):
             payload["roles"] = keywords["roles"]
         if keywords.get("link_data_only", None) and keywords['link_data_only'] != 'copy_files':
             payload["link_data_only"] = 'link_to_files'
+        if keywords.get('ccc_did', None):
+            payload['ccc_did'] = keywords['ccc_did'];
         # upload options
         if keywords.get('file_url', None) is not None:
             payload['upload_option'] = 'upload_file'
@@ -403,7 +405,7 @@ class LibraryClient(Client):
 
     def upload_from_galaxy_filesystem(self, library_id, filesystem_paths, folder_id=None,
                                       file_type="auto", dbkey="?", link_data_only=None,
-                                      roles=""):
+                                      roles="", **kwargs):
         """
         Upload a set of files already present on the filesystem of the Galaxy
         server to a library.
@@ -440,6 +442,9 @@ class LibraryClient(Client):
         """
         vars = locals().copy()
         del vars['self']
+        del vars['kwargs']
+        for key,value in kwargs.iteritems():
+            vars[key] = value;
         return self._do_upload(**vars)
 
     def copy_from_dataset(self, library_id, dataset_id, folder_id=None, message=''):
