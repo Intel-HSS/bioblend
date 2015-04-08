@@ -30,11 +30,11 @@ def upload_to_galaxy_library(galaxy_instance, library_client, library_name, file
     
     line_count_list = ['1']*len(file_paths_list);
 
-    #for library in galaxy_instance.libraries.get_libraries(name=library_name):     #iterate over list of dict
-      #library_id = library['id'];
-      #library_client.upload_from_galaxy_filesystem(library_id, '\n'.join(file_paths_list), link_data_only='link_to_files',
-          #remote_dataset = True, uuid_list = '\n'.join(uuid_list), remote_dataset_type_list = '\n'.join(file_types_list),
-          #file_size_list = '\n'.join(file_sizes_list), line_count_list = '\n'.join(line_count_list) );
+    for library in galaxy_instance.libraries.get_libraries(name=library_name):     #iterate over list of dict
+      library_id = library['id'];
+      library_client.upload_from_galaxy_filesystem(library_id, '\n'.join(file_paths_list), link_data_only='link_to_files',
+          remote_dataset = True, uuid_list = '\n'.join(uuid_list), remote_dataset_type_list = '\n'.join(file_types_list),
+          file_size_list = '\n'.join(file_sizes_list), line_count_list = '\n'.join(line_count_list) );
 
 
 if __name__ == "__main__":
