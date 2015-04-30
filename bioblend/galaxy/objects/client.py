@@ -39,10 +39,10 @@ class ObjClient(object):
         Optional boolean kwargs for specific object types:
 
         ``deleted`` (libraries and histories)
-          if :obj:`True`, return only deleted objects
+          if ``True``, return only deleted objects
 
         ``published`` (workflows)
-          if :obj:`True`, return published workflows
+          if ``True``, return published workflows
 
         :rtype: list of :class:`~.wrappers.Preview`
         """
@@ -366,5 +366,13 @@ class ObjToolClient(ObjClient):
 
         :rtype: list of :class:`~.wrappers.Tool`
         """
-        dicts = self.gi.tools.get_tools(name=name, trackster=trackster)
-        return [self.get(_['id']) for _ in dicts]
+        # dicts = self.gi.tools.get_tools(name=name, trackster=trackster)
+        # return [self.get(_['id']) for _ in dicts]
+        # As of 2015/04/15, GET /api/tools returns also data manager tools for
+        # non-admin users, see
+        # https://trello.com/c/jyl0cvFP/2633-api-tool-list-filtering-doesn-t-filter-data-managers-for-non-admins
+        # Trying to get() a data manager tool would then return a 404 Not Found
+        # error.
+        # Moreover, the dicts returned by gi.tools.get_tools() are richer than
+        # those returned by get(), so make this an alias for get_previews().
+        return self.get_previews(name, trackster)

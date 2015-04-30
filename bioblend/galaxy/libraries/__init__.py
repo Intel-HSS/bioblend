@@ -488,26 +488,39 @@ class LibraryClient(Client):
         payload['ldda_message'] = message
         return Client._post(self, payload, id=library_id, contents=True)
 
-    def set_library_permissions(self, library_id, access_in=None, modify_in=None,
-                                add_in=None, manage_in=None):
+    def get_library_permissions(self, library_id):
         """
-        Sets the permissions for a library.  Note: it will override all
-        security for this library even if you leave out a permission type.
+        Get the permessions for a library.
+
+        :type library_id: str
+        :param library_id: id of the library
+
+        :rtype: dict
+        :return: dictionary with all applicable permissions' values
+        """
+        url = '/'.join([self.gi._make_url(self, library_id), 'permissions'])
+        return Client._get(self, url=url)
+
+    def set_library_permissions(self, library_id, access_in=None,
+                                modify_in=None, add_in=None, manage_in=None):
+        """
+        Set the permissions for a library.  Note: it will override all security
+        for this library even if you leave out a permission type.
 
         :type library_id: str
         :param library_id: id of the library
 
         :type access_in: list
-        :param access_in: list of user ids
+        :param access_in: list of role ids
 
         :type modify_in: list
-        :param modify_in: list of user ids
+        :param modify_in: list of role ids
 
         :type add_in: list
-        :param add_in: list of user ids
+        :param add_in: list of role ids
 
         :type manage_in: list
-        :param manage_in: list of user ids
+        :param manage_in: list of role ids
         """
 
         payload = {}
@@ -519,9 +532,5 @@ class LibraryClient(Client):
             payload['LIBRARY_ADD_in'] = add_in
         if manage_in:
             payload['LIBRARY_MANAGE_in'] = manage_in
-
-        # create the url
-        url = self.url
-        url = '/'.join([url, library_id, 'permissions'])
-
+        url = '/'.join([self.gi._make_url(self, library_id), 'permissions'])
         return Client._post(self, payload, url=url)
