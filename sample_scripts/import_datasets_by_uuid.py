@@ -54,7 +54,7 @@ class DSInfo(object):
         if(not self.uuid):
             self.do_skip('Undefined UUID for info object');
         elif(not self.name):
-            self.do_skip('Undefined name for info object');
+            self.do_skip('Undefined name for info object corresponding to UUID %s'%(self.uuid));
         elif(self.pair_direction or self.pair_id):
             if(self.pair_direction and self.pair_direction != 'forward' and self.pair_direction != 'reverse'):
                 self.do_skip('Unknown paired field value: %s for info object corresponding to UUID %s. Allowed paired field values are forward and reverse'
@@ -266,7 +266,7 @@ def copy_other_history_datasets(gi, history_client, dataset_info_list, target_hi
             continue;
         #Is a history dataset from a different history
         if(info.src_history_id and info.src_hda_id and info.src_history_id != target_history_id):
-            target_hda = history_client.copy_history_dataset(target_history_id, info.src_history_id);
+            target_hda = history_client.copy_history_dataset(target_history_id, info.src_hda_id);
             if(not target_hda or 'id' not in target_hda):
                 print_error_and_exit('Could import dataset %s into history'%(info.name));
             info.target_hda_id = target_hda['id'];

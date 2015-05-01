@@ -372,6 +372,7 @@ class HistoryClient(Client):
         :param src_hda_id: history id of the dataset to be copied 
         """
         payload = dict(
+            type='dataset',
             content=src_hda_id,
             source='hda'
         )
