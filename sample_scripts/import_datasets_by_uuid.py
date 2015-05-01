@@ -358,9 +358,9 @@ def main():
     parser.add_option("-A", "--auth-file", dest="auth_filename",
                               help="JSON file with Galaxy host and key", metavar="FILE");
     parser.add_option("-f", "--uuid-file", dest="uuids_filename",
-                              help="TSV file with list of UUIDs to import", metavar="FILE");
+                              help="TSV file with list of UUIDs to import. The first row is assumed to be a header", metavar="FILE");
     parser.add_option("-H", "--target-history", dest="target_history",
-                              help="Target history name in Galaxy to ", metavar="HISTORY_NAME");
+                              help="Target history name in Galaxy to copy datasets into", metavar="HISTORY_NAME");
     (options, args) = parser.parse_args()
     if(not options.auth_filename):
         print_error_and_exit('Authentication file not provided');
