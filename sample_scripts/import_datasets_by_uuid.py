@@ -237,7 +237,7 @@ def copy_to_tmp_lib_and_back(gi, library_client, history_client, folder_client, 
     if(tmp_lib_id and target_history_id):
         #Copy datasets to a unique folder in the tmp library, then upload to target history
         folder_name= str(uuid.uuid4());     #get unique folder name
-        #Create returns list of dict
+        #Create folder, returns list of dict
         folder_list = library_client.create_folder(tmp_lib_id, folder_name);
         if(len(folder_list) == 0):
             print_error_and_exit('Could not create folder in tmp library %s\n'%(tmp_lib_name));
@@ -258,11 +258,18 @@ def copy_to_tmp_lib_and_back(gi, library_client, history_client, folder_client, 
                 info.target_hda_id = target_hda['id'];
         folder_client.delete_folder(folder_id);
 
-#def copy_hda_to_history(gi, history_client, history_ds_id_list, target_history_name):
-    #target_history_id = get_or_create_history_id(gi, target_history_name); 
-    #if(target_history_id):
-        #for dataset_id,history_id in history_ds_id_list:
-            #if(history_id != target_history_id):
+def copy_other_history_datasets(gi, history_client, dataset_info_list, target_history_name=None, target_history_id=None):
+    if(not target_history_id):
+        target_history_id = get_or_create_history_id(gi, history_client, target_history_name); 
+    for info in dataset_info_list:
+        if(info.skip):
+            continue;
+        #Is a history dataset from a different history
+        if(info.src_history_id and info.src_hda_id and info.src_history_id != target_history_id):
+            target_hda = history_client.copy_history_dataset(target_history_id, info.src_history_id);
+            if(not target_hda or 'id' not in target_hda):
+                print_error_and_exit('Could import dataset %s into history'%(info.name));
+            info.target_hda_id = target_hda['id'];
 
 def create_dataset_collections(gi, history_client, dataset_info_list, target_history_id=None, target_history_name=None):
     if(not target_history_id):
@@ -385,8 +392,10 @@ def main():
     target_history_id = get_or_create_history_id(gi, history_client, options.target_history);
     #Copy datasets from library to history
     copy_from_lib(gi, history_client, dataset_info_list, target_history_id=target_history_id);
-    #Copy from history to /tmp and back
-    copy_to_tmp_lib_and_back(gi, library_client, history_client, folder_client, '/tmp', dataset_info_list, target_history_id=target_history_id);
+    #Copy from history to /tmp and back - don't use anymore
+    #copy_to_tmp_lib_and_back(gi, library_client, history_client, folder_client, '/tmp', dataset_info_list, target_history_id=target_history_id);
+    #Copy history datasets from other histories
+    copy_other_history_datasets(gi, history_client, dataset_info_list, target_history_id=target_history_id);
     #Create dataset collections
     create_dataset_collections(gi, history_client, dataset_info_list, target_history_id=target_history_id);
 

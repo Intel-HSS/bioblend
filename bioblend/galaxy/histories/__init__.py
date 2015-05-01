@@ -360,6 +360,23 @@ class HistoryClient(Client):
         )
         return Client._post(self, payload, id=history_id, contents=True)
 
+    #See file lib/galaxy/webapps/galaxy/api/history_contents.py
+    def copy_history_dataset(self, history_id, src_hda_id):
+        """
+        Copy dataset with id src_hda_id to history with id history_id
+
+        :type history_id: str
+        :param history_id: Encoded history ID
+
+        :type src_hda_id: str
+        :param src_hda_id: history id of the dataset to be copied 
+        """
+        payload = dict(
+            content=src_hda_id,
+            source='hda'
+        )
+        return Client._post(self, payload, id=history_id, contents=True)
+
     def download_dataset(self, history_id, dataset_id, file_path,
                          use_default_filename=True, to_ext=None):
         """
