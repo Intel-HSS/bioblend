@@ -93,78 +93,64 @@ def validate_queried_dataset_info(dataset_info_list):
             %(len(dataset_info_list), num_valid_datasets, num_library_datasets, num_history_datasets));
 
 #Check header of UUID query file
-def check_header(uuids_filename):
+def check_and_return_header(uuids_fd):
     uuid_field_names = set(['CCC_DID', 'UUID']);
+    first_line = uuids_fd.readline();  #Read first line
+    dialect = None;
+    has_header = False;
+    identifer_field_name = None;
     try:
-        with open(uuids_filename, 'rb') as csvfile:
-            buffer = csvfile.read(16384);  #16KB buffer
-            dialect = None;
-            has_header = False;
-            identifer_field_name = None;
-            try:
-                sniffer = csv.Sniffer();
-                dialect = sniffer.sniff(buffer);
-                has_header = sniffer.has_header(buffer);
-            except csv.Error:
-                dialect = csv.excel();
-                dialect.delimiter = '\t';
-                dialect.quotechar = '';
-                dialect.quoting = csv.QUOTE_NONE;
-            print('INFO: for UUID file, delimiter is %s and quote char is %s'
-                    %('<TAB>' if dialect.delimiter=='\t' else dialect.delimiter,
-                        '<NONE>' if dialect.quoting == csv.QUOTE_NONE else dialect.quotechar));
-            csvfile.seek(0);
-            for line in csvfile:
-                line = line.strip();
-                tokens = line.split(dialect.delimiter);
-                for token in tokens:
-                    if(token in uuid_field_names):
-                        has_header = True;
-                        identifer_field_name = token;
-                        break;
-                break;
-            if(not has_header):
-                print_error_and_exit('TSV file with CCC_DIDs/UUIDs: %s does not seem to have a header row'%(uuids_filename));
-            return dialect, identifer_field_name;
-    except IOError:
-        print_error_and_exit('Could not open TSV file with UUIDs '+uuids_filename);
-    return None;
+        sniffer = csv.Sniffer();
+        dialect = sniffer.sniff(first_line);
+        has_header = sniffer.has_header(first_line);
+    except csv.Error:
+        dialect = csv.excel();
+        dialect.delimiter = '\t';
+        dialect.quotechar = '';
+        dialect.quoting = csv.QUOTE_NONE;
+    print('INFO: for UUID file, delimiter is %s and quote char is %s'
+            %('<TAB>' if dialect.delimiter=='\t' else dialect.delimiter,
+                '<NONE>' if dialect.quoting == csv.QUOTE_NONE else dialect.quotechar));
+    first_line = first_line.strip();
+    fieldnames = first_line.split(dialect.delimiter);
+    for token in fieldnames:
+        if(token in uuid_field_names):
+            has_header = True;
+            identifer_field_name = token;
+            break;
+    if(not has_header):
+        print_error_and_exit('TSV file with CCC_DIDs/UUIDs: %s does not seem to have a header row'%(uuids_filename));
+    return dialect, identifer_field_name, fieldnames;
 
 #First line of TSV file is assumed to be header with field names
-def parse_TSV_file(uuids_filename):
+def parse_TSV_file(uuids_fd):
     uuid_str_to_info = {};
-
     line_number = 2;    #First line is header, begin numbering at 1 for ease of diplaying error messages to user
     first_line_offset = 2;    
-    try:
-        dialect,id_field_name = check_header(uuids_filename);
-        with open(uuids_filename, 'rb') as csvfile:
-            csv_reader = csv.DictReader(csvfile, dialect=dialect);
-            for row in csv_reader:
-                uuid_str = row.get(id_field_name, None);
-                if(not uuid_str):
-                    sys.stdout.write('WARNING: no CCC_DID/UUID found in line %d, skipping\n'%(line_number));
-                    continue;
-                if(uuid_str in uuid_str_to_info):
-                    sys.stdout.write('WARNING: CCC_DID/UUID in line %d was already present on line %d, skipping\n'%(line_number,
-                        uuid_str_to_info[uuid_str].line_number));
-                    continue;
-                try:
-                    X = uuid.UUID(uuid_str);
-                except:
-                    sys.stdout.write('WARNING: Incorrectly formatted CCC_DID/UUID on line %d, skipping\n'%(line_number));
-                    continue;
-                uuid_str_to_info[uuid_str] = DSInfo();
-                uuid_str_to_info[uuid_str].uuid = uuid_str;
-                uuid_str_to_info[uuid_str].query_idx = line_number - first_line_offset;
-                uuid_str_to_info[uuid_str].dataset_collection_name = row.get('dataset_collection_name', None);
-                uuid_str_to_info[uuid_str].pair_direction = row.get('pair_direction',None);
-                uuid_str_to_info[uuid_str].pair_id = row.get('pair_id',None);
-                line_number += 1;
-            return uuid_str_to_info;
-    except IOError:
-        print_error_and_exit('Could not open TSV file with UUIDs '+uuids_filename);
-    return {};
+    dialect,id_field_name,fieldnames = check_and_return_header(uuids_fd);
+    csv_reader = csv.DictReader(uuids_fd, fieldnames=fieldnames, dialect=dialect);
+    for row in csv_reader:
+        uuid_str = row.get(id_field_name, None);
+        if(not uuid_str):
+            sys.stdout.write('WARNING: no CCC_DID/UUID found in line %d, skipping\n'%(line_number));
+            continue;
+        if(uuid_str in uuid_str_to_info):
+            sys.stdout.write('WARNING: CCC_DID/UUID in line %d was already present on line %d, skipping\n'%(line_number,
+                uuid_str_to_info[uuid_str].line_number));
+            continue;
+        try:
+            X = uuid.UUID(uuid_str);
+        except:
+            sys.stdout.write('WARNING: Incorrectly formatted CCC_DID/UUID on line %d, skipping\n'%(line_number));
+            continue;
+        uuid_str_to_info[uuid_str] = DSInfo();
+        uuid_str_to_info[uuid_str].uuid = uuid_str;
+        uuid_str_to_info[uuid_str].query_idx = line_number - first_line_offset;
+        uuid_str_to_info[uuid_str].dataset_collection_name = row.get('dataset_collection_name', None);
+        uuid_str_to_info[uuid_str].pair_direction = row.get('pair_direction',None);
+        uuid_str_to_info[uuid_str].pair_id = row.get('pair_id',None);
+        line_number += 1;
+    return uuid_str_to_info;
 
 def find_datasets_by_uuids_in_histories(gi, history_client, datasets_dict, search_history_id=None, search_history_name=None):
     if(not datasets_dict):
@@ -364,8 +350,8 @@ def main():
     (options, args) = parser.parse_args()
     if(not options.auth_filename):
         print_error_and_exit('Authentication file not provided');
-    if(not options.uuids_filename):
-        print_error_and_exit('TSV file with UUIDs not provided');
+    #if(not options.uuids_filename):
+        #print_error_and_exit('TSV file with UUIDs not provided');
     if(not options.target_history):
         print_error_and_exit('Galaxy history name where datasets will be imported not provided');
 
@@ -378,7 +364,14 @@ def main():
     folder_client = FoldersClient(gi);
 
     #Read UUIDs file
-    queried_ds_uuid_dict = parse_TSV_file(options.uuids_filename);
+    if(options.uuids_filename):
+        try:
+            uuids_fd = open(options.uuids_filename, 'rb');
+        except IOError:
+            print_error_and_exit('Could not open TSV file with UUIDs '+options.uuids_filename);
+    else:
+        uuids_fd = sys.stdin;
+    queried_ds_uuid_dict = parse_TSV_file(uuids_fd);
 
     #Search for datasets
     find_datasets_by_uuids_in_histories(gi, history_client, queried_ds_uuid_dict);
