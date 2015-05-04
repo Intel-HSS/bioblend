@@ -47,7 +47,7 @@ class DSInfo(object):
         default_info_dict = { 'uuid':None, 'name':None, 'query_idx':None, 
                 'dataset_collection_name':None, 'pair_direction':None, 'pair_id':None,
                 'src_hda_id':None, 'src_history_id':None, 'src_ldda_id':None, 'src_library_id':None,
-                'target_hda_id':None, 'skip':False };
+                'target_hda_id':None, 'skip':False, 'line_number':None };
         self.__dict__ = default_info_dict;
 
     def validate(self):
@@ -58,7 +58,7 @@ class DSInfo(object):
         elif(self.pair_direction or self.pair_id):
             if(self.pair_direction and self.pair_direction != 'forward' and self.pair_direction != 'reverse'):
                 self.do_skip('Unknown paired field value: %s for info object corresponding to UUID %s. Allowed paired field values are forward and reverse'
-                    %(str(info.pair_direction), str(self.uuid)));
+                    %(str(self.pair_direction), str(self.uuid)));
             if(not self.pair_id):
                 self.do_skip('Paired datasets must specify unique pair id - no pair id found for UUID %s'%(str(self.uuid)));
         elif(not((self.src_library_id and self.src_ldda_id) or (self.src_history_id and self.src_hda_id))):
@@ -160,6 +160,7 @@ def parse_TSV_file(uuids_filename):
                 uuid_str_to_info[uuid_str].dataset_collection_name = row.get('dataset_collection_name', None);
                 uuid_str_to_info[uuid_str].pair_direction = row.get('pair_direction',None);
                 uuid_str_to_info[uuid_str].pair_id = row.get('pair_id',None);
+                uuid_str_to_info[uuid_str].line_number = line_number;
                 line_number += 1;
             return uuid_str_to_info;
     except IOError:
