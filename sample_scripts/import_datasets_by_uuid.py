@@ -294,6 +294,7 @@ def create_dataset_collections(gi, history_client, dataset_info_list, target_his
             if(info.target_hda_id):
                 curr_dict['src'] = 'hda';
                 curr_dict['id'] = info.target_hda_id;
+                history_client.update_dataset(target_history_id, info.target_hda_id, visible=False);    #hide dataset
             elif(info.src_library_id and info.src_ldda_id):        #library dataset
                 curr_dict['src'] = 'ldda';
                 curr_dict['id'] = info.src_ldda_id;
