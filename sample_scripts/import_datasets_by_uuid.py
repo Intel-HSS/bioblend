@@ -1,10 +1,17 @@
 #!/usr/bin/python
 import sys;
 import uuid;
-import bioblend;
 import json;
 import csv;
 import itertools;
+import os;
+
+#Override path to bioblend if BIOBLEND_REPO_DIR defined
+bioblend_repo_dir = os.getenv('BIOBLEND_REPO_DIR', None);
+if(bioblend_repo_dir):
+    sys.path = [ bioblend_repo_dir + os.sep + 'bioblend' ] + sys.path;
+
+import bioblend;
 from optparse import OptionParser
 from bioblend.galaxy import GalaxyInstance
 from bioblend.galaxy.histories import HistoryClient
