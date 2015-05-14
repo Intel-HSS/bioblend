@@ -115,6 +115,12 @@ def check_and_return_header(uuids_fd):
         dialect.delimiter = '\t';
         dialect.quotechar = '';
         dialect.quoting = csv.QUOTE_NONE;
+    #If delim is None or empty string or definitely incorrect delim, set to TSV default
+    if(not dialect.delimiter or len(dialect.delimiter) == 0 or dialect.delimiter.isalnum()):
+        dialect = csv.excel();
+        dialect.delimiter = '\t';
+        dialect.quotechar = '';
+        dialect.quoting = csv.QUOTE_NONE;
     print('INFO: for UUID file, delimiter is %s and quote char is %s'
             %('<TAB>' if dialect.delimiter=='\t' else dialect.delimiter,
                 '<NONE>' if dialect.quoting == csv.QUOTE_NONE else dialect.quotechar));
