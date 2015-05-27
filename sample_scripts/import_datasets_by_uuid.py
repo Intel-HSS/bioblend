@@ -100,7 +100,7 @@ def validate_queried_dataset_info(dataset_info_list):
             %(len(dataset_info_list), num_valid_datasets, num_library_datasets, num_history_datasets));
 
 #Check header of UUID query file
-def check_and_return_header(uuids_fd):
+def check_and_return_header(uuids_fd, delimiter='\t', quotechar=''):
     uuid_field_names = set(['CCC_DID', 'UUID']);
     first_line = uuids_fd.readline();  #Read first line
     dialect = None;
@@ -112,14 +112,14 @@ def check_and_return_header(uuids_fd):
         has_header = sniffer.has_header(first_line);
     except csv.Error:
         dialect = csv.excel();
-        dialect.delimiter = '\t';
-        dialect.quotechar = '';
+        dialect.delimiter = delimiter;
+        dialect.quotechar = quotechar;
         dialect.quoting = csv.QUOTE_NONE;
     #If delim is None or empty string or definitely incorrect delim, set to TSV default
     if(not dialect.delimiter or len(dialect.delimiter) == 0 or dialect.delimiter.isalnum()):
         dialect = csv.excel();
-        dialect.delimiter = '\t';
-        dialect.quotechar = '';
+        dialect.delimiter = delimiter;
+        dialect.quotechar = quotechar;
         dialect.quoting = csv.QUOTE_NONE;
     print('INFO: for UUID file, delimiter is %s and quote char is %s'
             %('<TAB>' if dialect.delimiter=='\t' else dialect.delimiter,
@@ -132,7 +132,7 @@ def check_and_return_header(uuids_fd):
             identifer_field_name = token;
             break;
     if(not has_header):
-        print_error_and_exit('TSV file with CCC_DIDs/UUIDs: %s does not seem to have a header row'%(uuids_filename));
+        print_error_and_exit('TSV/CSV file with CCC_DIDs/UUIDs: %s does not seem to have a header row'%(uuids_filename));
     return dialect, identifer_field_name, fieldnames;
 
 #First line of TSV file is assumed to be header with field names
