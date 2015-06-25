@@ -41,3 +41,5 @@ docs/_build
 
 # Python virtualenv
 .venv
+
+sample_scripts/uuid_query_files/

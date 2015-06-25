@@ -135,12 +135,13 @@ if __name__ == "__main__":
         if(len(row_tokens) > 0):
             if(row_tokens[0][0] == '#'):
                 continue;
-            assert len(row_tokens) >= 4;
+            assert len(row_tokens) >= 3;
             info = UploadFileInfo();
             info.path = row_tokens[0];      #path
             info.size = row_tokens[1];      #size in bytes
             info.type = row_tokens[2];      #types - bam, sam, png etc
-            info.cluster = row_tokens[3];         #belongs to g1.spark0.intel.com or g2.spark0.intel.com
+            if(len(row_tokens) >= 4):
+                info.cluster = row_tokens[3];         #belongs to g1.spark0.intel.com or g2.spark0.intel.com - optional
             if(len(row_tokens) >= 5):
                 info.uuid = row_tokens[4];        #CCC_DID - optional
             if(len(row_tokens) >= 6):
