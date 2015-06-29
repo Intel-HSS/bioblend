@@ -135,17 +135,15 @@ if __name__ == "__main__":
         if(len(row_tokens) > 0):
             if(row_tokens[0][0] == '#'):
                 continue;
-            assert len(row_tokens) >= 3;
+            assert len(row_tokens) >= 7;
             info = UploadFileInfo();
-            info.path = row_tokens[0];      #path
-            info.size = row_tokens[1];      #size in bytes
-            info.type = row_tokens[2];      #types - bam, sam, png etc
-            if(len(row_tokens) >= 4):
-                info.cluster = row_tokens[3];         #belongs to g1.spark0.intel.com or g2.spark0.intel.com - optional
-            if(len(row_tokens) >= 5):
-                info.uuid = row_tokens[4];        #CCC_DID - optional
-            if(len(row_tokens) >= 6):
-                info.folder = row_tokens[5];        #folder name - optional
+            info.uuid = row_tokens[0];        #CCC_DID
+            info.path = row_tokens[1] + '/' + row_tokens[2];      #path
+	    info.cluster = row_tokens[3];   #cluster location - can be left blank
+            info.size = row_tokens[5];      #size in bytes
+            info.type = row_tokens[6];      #types - bam, sam, png etc
+            if(len(row_tokens) >= 8):
+                info.folder = row_tokens[7];        #folder name - optional
             upload_file_info_list.append(info);
     for info in upload_file_info_list:
         info.validate();
