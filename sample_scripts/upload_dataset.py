@@ -139,7 +139,7 @@ if __name__ == "__main__":
             info = UploadFileInfo();
             info.uuid = row_tokens[0];        #CCC_DID
             info.path = row_tokens[1] + '/' + row_tokens[2];      #path
-	    info.cluster = row_tokens[3];   #cluster location - can be left blank
+            info.cluster = row_tokens[3];   #cluster location - can be left blank
             info.size = row_tokens[5];      #size in bytes
             info.type = row_tokens[6];      #types - bam, sam, png etc
             if(len(row_tokens) >= 8):
